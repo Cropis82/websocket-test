@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat WebSocket Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            padding: 50px;
+            margin: 0;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        #messages {
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            background-color: #fafafa;
+        }
+        .message {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <h3 style="margin-top: 0;">Test Chat Anonima</h3>
+        <div id="messages"></div>
+        
+        <div class="input-area">
+            <input type="text" id="messageText" placeholder="Scrivi un messaggio..." autocomplete="off">
+            <button onclick="sendMessage()">Invia</button>
+        </div>
+    </div>
+
+    <script>
+        // Connessione al WebSocket del server FastAPI
+        const ws = new WebSocket("ws://localhost:8000/ws");
+        const messagesDiv = document.getElementById("messages");
+        const inputField = document.getElementById("messageText");
+
+        // Ricezione messaggi dal server
+        ws.onmessage = function(event) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+            messageElement.textContent = event.data;
+            messagesDiv.appendChild(messageElement);
+            
+            // Scorri automaticamente verso il basso
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        };
+
+        // Funzione per inviare i messaggi
+        function sendMessage() {
+            const text = inputField.value.trim();
+            if (text !== "") {
+                ws.send(text);
+                inputField.value = ""; // Pulisci la casella
+            }
+        }
+
+        // Permetti l'invio premendo "Enter"
+        inputField.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
